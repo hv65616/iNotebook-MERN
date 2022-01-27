@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require("../models/User");
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const JWT = "inotebookauthentication";
 //Create A User Using POST Request. No login required
 router.post(
   "/createUser",
@@ -31,9 +33,16 @@ router.post(
         email: req.body.email,
         password: secPass,
       });
-      res.json({
-        nice: "nice",
-      });
+      const data = {
+        user: {
+          id: user.id,
+        },
+      };
+      const authToken = jwt.sign(data, JWT);
+      // res.json({
+      //   user,
+      // });
+      res.json({ authToken });
     } catch (error) {
       console.error(error.message);
       res.status(500).send("Some error occured");
