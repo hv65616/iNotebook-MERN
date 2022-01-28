@@ -45,7 +45,50 @@ router.post(
       res.json({ authToken });
     } catch (error) {
       console.error(error.message);
-      res.status(500).send("Some error occured");
+      res.status(500).send("Internal Server Error");
+    }
+  }
+);
+
+//Creating an authentication for the user when he/she tries to login/
+router.post(
+  "/login",
+  [
+    body("email", "Enter a valid email").isEmail(),
+    body("password", "Password cannot be empty").exists(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+    const { email } = req.body;
+    try {
+      let user = await User.findOne({ email });
+      if (!user) {
+        return res
+          .status(400)
+          .json({ error: "Please enter valid email credentials" });
+      }
+      const passwordCompare = await bcrypt.compare(
+        req.body.password,
+        user.password
+      );
+      if (!passwordCompare) {
+        return res
+          .status(400)
+          .json({ error: "Please enter valid password credentials" });
+      }
+      const payload = {
+        user: {
+          id: user.id,
+        },
+      };
+      const authToken = jwt.sign(payload, JWT);
+      res.json({ authToken });
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send("Internal Server Error");
     }
   }
 );
