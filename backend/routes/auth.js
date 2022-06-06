@@ -1,12 +1,19 @@
+// importing the express
 const express = require("express");
+
+// importing the router from express
 const router = express.Router();
+
+// importing the User model from models folder
 const User = require("../models/User");
 const { body, validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const JWT = "inotebookauthentication";
 const fetchuser = require("../middleware/fetchuser");
+
 //Create A User Using POST Request. No login required
+// Post request take path from which it being called and the handlers
 router.post(
   "/createUser",
   body("name", "Enter a valid name").isLength({ min: 5 }),
