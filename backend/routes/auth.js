@@ -6,7 +6,10 @@ const router = express.Router();
 
 // importing the User model from models folder
 const User = require("../models/User");
+
+// importing the express validator which is used to check whether the things are valid or not
 const { body, validationResult } = require("express-validator");
+
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const JWT = "inotebookauthentication";
@@ -26,7 +29,10 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
     try {
+      // Check whether the user with this email already exists or not
       let user = await User.findOne({ email: req.body.email });
+
+      // if the user with already present email if found then it return the error
       if (user) {
         return res
           .status(400)
@@ -36,11 +42,14 @@ router.post(
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(req.body.password, salt);
 
+      // using User Schema create a json of which consists user
       user = await User.create({
         name: req.body.name,
         email: req.body.email,
         password: secPass,
       });
+
+      // it used the id generated when user json is created the id generated there is call back and used here
       const data = {
         user: {
           id: user.id,
@@ -52,6 +61,7 @@ router.post(
       // });
       res.json({ authToken });
     } catch (error) {
+      // if any error found catch will run and execute this part of code
       console.error(error.message);
       res.status(500).send("Internal Server Error");
     }
