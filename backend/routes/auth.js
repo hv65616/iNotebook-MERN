@@ -24,9 +24,11 @@ const fetchuser = require("../middleware/fetchuser");
 // Post request take path from which it being called and the handlers
 router.post(
   "/createUser",
-  body("name", "Enter a valid name").isLength({ min: 5 }),
-  body("email", "Enter a valid email").isEmail(),
-  body("password", "Enter a valid password").isLength({ min: 5 }),
+  [
+    body("name", "Enter a valid name").isLength({ min: 5 }),
+    body("email", "Enter a valid email").isEmail(),
+    body("password", "Enter a valid password").isLength({ min: 5 }),
+  ],
   async (req, res) => {
     //If there are any error then return bad request and the error
     const errors = validationResult(req);
@@ -86,18 +88,24 @@ router.post(
     body("password", "Password cannot be empty").exists(),
   ],
   async (req, res) => {
+    // check for errors and if found then it return the array of errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
+
+    // takes the email out from the body
     const { email } = req.body;
     try {
+      // check whether the email is present or not if not found then console the error it return the promise so thats why we use await to hold on and let this promise first resolve
       let user = await User.findOne({ email });
       if (!user) {
         return res
           .status(400)
           .json({ error: "Please enter valid email credentials" });
       }
+
+      // this also perform the same work compare the password one this is entered by user and one that is alredy stored if comparison got fail then console the error
       const passwordCompare = await bcrypt.compare(
         req.body.password,
         user.password
@@ -107,12 +115,18 @@ router.post(
           .status(400)
           .json({ error: "Please enter valid password credentials" });
       }
+
+      // this is just similar to createuser data
       const payload = {
         user: {
           id: user.id,
         },
       };
+
+      // jwt again generate the authtoken by using the payload and JWT string that passed
       const authToken = jwt.sign(payload, JWT);
+
+      // console logging the error
       res.json({ authToken });
     } catch (error) {
       console.error(error.message);
