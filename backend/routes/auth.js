@@ -10,7 +10,12 @@ const User = require("../models/User");
 // importing the express validator which is used to check whether the things are valid or not
 const { body, validationResult } = require("express-validator");
 
+// importing of bcrypt
+// it is used to crypt the password or any sensitive information that you dont want anybody to seen it basically generates its hash value which is called salt
 const bcrypt = require("bcryptjs");
+
+// importing of jwt
+// it is used to setup an authentication by generating an auth token which is given to user whenever he or she tries to access any confidential information first this token get verified them it allows
 const jwt = require("jsonwebtoken");
 const JWT = "inotebookauthentication";
 const fetchuser = require("../middleware/fetchuser");
@@ -39,6 +44,7 @@ router.post(
           .json({ error: "Sorry a user with this email already exists" });
       }
 
+      // below 2 lines is converting the password into its salt value
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(req.body.password, salt);
 
@@ -55,10 +61,14 @@ router.post(
           id: user.id,
         },
       };
+
+      // here the jwt use the sign function which will sign the data along with JWT and this gives the authtoken
       const authToken = jwt.sign(data, JWT);
       // res.json({
       //   user,
       // });
+
+      // console logging the authtoken
       res.json({ authToken });
     } catch (error) {
       // if any error found catch will run and execute this part of code
